@@ -6,16 +6,16 @@
 <title>Censo Pepsi</title>
 <style>
   :root {
-    --blue: #005CB9;
-    --blue-dark: #004A9A;
-    --blue-light: #E8F1FB;
-    --yellow: #FFD100;
-    --yellow-dark: #E6BC00;
-    --text: #1a1a1a;
+    --blue: #1D3557;
+    --blue-dark: #152640;
+    --blue-light: #eef2f7;
+    --yellow: #F5820A;
+    --yellow-dark: #d46e08;
+    --text: #1a1a2e;
     --text-muted: #6b7280;
     --border: #d1d5db;
     --surface: #ffffff;
-    --bg: #f5f7fa;
+    --bg: #f4f6f9;
     --radius: 10px;
     --success: #059669;
     --danger: #dc2626;
@@ -34,34 +34,26 @@
   /* HEADER */
   .header {
     background: var(--blue);
-    padding: 16px 20px 14px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  .header-badge {
-    background: var(--yellow);
-    color: var(--blue-dark);
-    font-weight: 800;
-    font-size: 13px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    letter-spacing: 0.05em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    border-bottom: 4px solid var(--yellow);
   }
   .header-title {
     color: white;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
   }
   .header-sub {
     color: rgba(255,255,255,0.7);
-    font-size: 12px;
-    margin-top: 1px;
+    font-size: 11px;
+    margin-top: 3px;
   }
 
   /* PROGRESS */
@@ -98,7 +90,7 @@
   .section-label {
     font-size: 11px;
     font-weight: 700;
-    color: var(--blue);
+    color: var(--yellow-dark);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 6px;
@@ -322,9 +314,10 @@
     padding: 13px 18px;
   }
   .btn-success {
-    background: var(--success);
+    background: linear-gradient(135deg, #059669, #047857);
     color: white;
     width: 100%;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3);
   }
 
   /* SUCCESS SCREEN */
@@ -388,10 +381,7 @@
 
 <div class="header">
   <div>
-    <div class="header-badge">CENSO</div>
-  </div>
-  <div>
-    <div class="header-title">Levantamiento de clientes</div>
+    <div class="header-title">CENSO PEPSI 2026 · SANTA ANA</div>
     <div class="header-sub" id="header-sub">Completa los campos paso a paso</div>
   </div>
 </div>
