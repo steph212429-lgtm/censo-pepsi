@@ -3,21 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Censo Pepsi</title>
+<title>CBC Censo 2026</title>
 <style>
   :root {
-    --blue: #1D3557;
-    --blue-dark: #152640;
-    --blue-light: #eef2f7;
-    --yellow: #F5820A;
-    --yellow-dark: #d46e08;
+    --blue: #1a2e4a;
+    --blue-dark: #0f1e30;
+    --blue-light: #eef4ff;
+    --yellow: #FD7B01;
+    --yellow-dark: #d46600;
+    --purple: #B648CB;
+    --green: #00BE00;
+    --sky: #009AE2;
+    --gold: #FFCD00;
     --text: #1a1a2e;
     --text-muted: #6b7280;
     --border: #d1d5db;
     --surface: #ffffff;
     --bg: #f4f6f9;
     --radius: 10px;
-    --success: #059669;
+    --success: #00BE00;
     --danger: #dc2626;
   }
 
@@ -41,7 +45,8 @@
     top: 0;
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    border-bottom: 4px solid var(--yellow);
+    border-bottom: none;
+    position: relative;
   }
   .header-title {
     color: white;
@@ -57,6 +62,13 @@
   }
 
   /* PROGRESS */
+  .cbc-bar {
+    display: flex;
+    height: 5px;
+  }
+  .cbc-bar span {
+    flex: 1;
+  }
   .progress-bar {
     background: var(--blue-dark);
     height: 4px;
@@ -90,7 +102,7 @@
   .section-label {
     font-size: 11px;
     font-weight: 700;
-    color: var(--yellow-dark);
+    color: var(--yellow);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 6px;
@@ -381,10 +393,11 @@
 
 <div class="header">
   <div>
-    <div class="header-title">CENSO PEPSI 2026 · SANTA ANA</div>
+    <div class="header-title">CBC · CENSO 2026 · SANTA ANA</div>
     <div class="header-sub" id="header-sub">Completa los campos paso a paso</div>
   </div>
 </div>
+<div class="cbc-bar"><span style="background:#B648CB"></span><span style="background:#FD7B01"></span><span style="background:#00BE00"></span><span style="background:#009AE2"></span><span style="background:#FFCD00"></span></div>
 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 
 <div class="container">
@@ -468,7 +481,7 @@
     <div class="sap-dup-field" id="sap-dup-wrap">
       <div class="field-group" style="margin-top:10px">
         <label class="field-label">SAP del duplicado</label>
-        <input type="text" id="inp-sap-dup" placeholder="Ingresa el SAP" inputmode="numeric">
+        <input type="text" id="inp-sap-dup" placeholder="Ingresa el SAP (7 dígitos)" inputmode="numeric" maxlength="7" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       </div>
       <div class="inline-note">Ingresa el SAP del registro duplicado y continúa.</div>
     </div>
@@ -546,20 +559,20 @@
     <div class="section-label">Pregunta 4 de 16</div>
     <div class="section-title">Actualización de número telefónico</div>
     <div class="field-group">
-      <label class="field-label">Teléfono 1</label>
-      <input type="tel" id="inp-tel1" placeholder="0000-0000">
+      <label class="field-label">Teléfono 1 <span class="req">*</span></label>
+      <input type="tel" id="inp-tel1" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
     </div>
     <div class="field-group">
       <label class="field-label">Teléfono 2</label>
-      <input type="tel" id="inp-tel2" placeholder="0000-0000">
+      <input type="tel" id="inp-tel2" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <div class="field-group">
       <label class="field-label">Teléfono 3</label>
-      <input type="tel" id="inp-tel3" placeholder="0000-0000">
+      <input type="tel" id="inp-tel3" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <div class="nav-btns">
       <button class="btn btn-secondary" onclick="goBack('sec-q3')">← Atrás</button>
-      <button class="btn btn-primary" onclick="goTo('sec-q4','sec-q5')">Siguiente →</button>
+      <button class="btn btn-primary" onclick="goQ4Next()">Siguiente →</button>
     </div>
   </div>
 
@@ -748,7 +761,7 @@
     <div class="field-error" id="err-q13">Selecciona una opción.</div>
     <div class="nav-btns">
       <button class="btn btn-secondary" id="btn-q13-back" onclick="goBack('sec-q9')">← Atrás</button>
-      <button class="btn btn-primary" onclick="nextSec('sec-q13','sec-q14','err-q13','q13')">Siguiente →</button>
+      <button class="btn btn-primary" onclick="goQ13Next()">Siguiente →</button>
     </div>
   </div>
 
@@ -1238,6 +1251,33 @@ function resetForm() {
   document.getElementById('sec-ident').classList.add('always');
   updateProgress(0);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── P13: salto condicional (No atiende Salva Cola → P16) ──
+function goQ13Next() {
+  if (!answers['q13']) {
+    document.getElementById('err-q13').classList.add('show'); return;
+  }
+  document.getElementById('err-q13').classList.remove('show');
+  if (answers['q13'] === 'No atiende Salva Cola') {
+    showSection('sec-q16');
+    updateProgress(16);
+  } else {
+    showSection('sec-q14');
+    updateProgress(13);
+  }
+}
+
+// ── P4: Tel1 obligatorio, 8 dígitos ────────────────────────
+function goQ4Next() {
+  const tel1 = document.getElementById('inp-tel1').value.trim();
+  const err = document.getElementById('err-tel1');
+  if (!tel1 || tel1.length !== 8) {
+    err.classList.add('show'); return;
+  }
+  err.classList.remove('show');
+  showSection('sec-q5');
+  updateProgress(4);
 }
 
 // Link de modificación
