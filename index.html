@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBC Censo 2026</title>
+<style>
+  :root {
+    --blue: #1a2e4a;
+    --blue-dark: #0f1e30;
+    --blue-light: #eef4ff;
+    --yellow: #FD7B01;
+    --yellow-dark: #d46600;
+    --purple: #B648CB;
+    --green: #00BE00;
+    --sky: #009AE2;
+    --gold: #FFCD00;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #d1d5db;
+    --surface: #ffffff;
+    --bg: #f4f6f9;
+    --radius: 10px;
+    --success: #00BE00;
+    --danger: #dc2626;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--blue);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    border-bottom: none;
+    position: relative;
+  }
+  .header-title {
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+  .header-sub {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    margin-top: 3px;
+  }
+
+  /* PROGRESS */
+  .cbc-bar {
+    display: flex;
+    height: 5px;
+  }
+  .cbc-bar span {
+    flex: 1;
+  }
+  .progress-bar {
+    background: var(--blue-dark);
+    height: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--yellow);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* CONTAINER */
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  /* SECTION CARD */
+  .section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+  .section.active { display: block; }
+  .section.always { display: block; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  /* FORM ELEMENTS */
+  label.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  label.field-label .req { color: var(--danger); margin-left: 2px; }
+
+  select, input[type="text"], input[type="number"], input[type="tel"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface);
+    font-family: inherit;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,92,185,0.12);
+  }
+  input[readonly] {
+    background: var(--bg);
+    color: var(--text-muted);
+    border-color: var(--border);
+  }
+
+  .field-group { margin-bottom: 14px; }
+
+  /* AUTOCOMPLETE */
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: white;
+    border: 1.5px solid var(--blue);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    display: none;
+  }
+  .autocomplete-list.open { display: block; }
+  .autocomplete-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .autocomplete-item:hover, .autocomplete-item.focused { background: var(--blue-light); }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .sap-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    background: var(--blue-light);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* RADIO / CHECKBOX options */
+  .options-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 14px;
+    user-select: none;
+  }
+  .option-item:hover { border-color: var(--blue); background: var(--blue-light); }
+  .option-item input[type="radio"],
+  .option-item input[type="checkbox"] { display: none; }
+  .option-dot {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s;
+  }
+  .option-dot-sq {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s;
+  }
+  .option-item.selected {
+    border-color: var(--blue);
+    background: var(--blue-light);
+  }
+  .option-item.selected .option-dot {
+    border-color: var(--blue);
+    background: var(--blue);
+  }
+  .option-item.selected .option-dot::after {
+    content: '';
+    width: 6px; height: 6px;
+    background: white;
+    border-radius: 50%;
+  }
+  .option-item.selected .option-dot-sq {
+    border-color: var(--blue);
+    background: var(--blue);
+  }
+  .option-item.selected .option-dot-sq::after {
+    content: '✓';
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* SAP field inline for duplicado */
+  .sap-dup-field { display: none; margin-top: 10px; }
+  .sap-dup-field.show { display: block; }
+  .inline-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: #fff8e1;
+    border-left: 3px solid var(--yellow-dark);
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* HORARIOS grid */
+  .horario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* NUMBER inputs */
+  .number-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .number-row input {
+    max-width: 100px;
+    text-align: center;
+  }
+  .number-row .unit {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* LINK box */
+  .link-box {
+    background: var(--blue-light);
+    border: 1.5px solid var(--blue);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: none;
+  }
+  .link-box.show { display: block; }
+  .link-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .link-box a {
+    color: var(--blue);
+    font-weight: 600;
+    font-size: 14px;
+    word-break: break-all;
+    text-decoration: underline;
+  }
+
+  /* NAVIGATION BUTTONS */
+  .nav-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    flex: 0 0 auto;
+    padding: 13px 18px;
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+  }
+
+  /* SUCCESS SCREEN */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .success-screen.show { display: block; }
+  .success-icon {
+    width: 64px; height: 64px;
+    background: #d1fae5;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 32px;
+  }
+  .success-screen h2 { font-size: 20px; color: var(--success); margin-bottom: 8px; }
+  .success-screen p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* ERROR messages */
+  .field-error {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 4px;
+    display: none;
+  }
+  .field-error.show { display: block; }
+
+  /* SKIP note */
+  .skip-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* INFO box */
+  .info-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 400px) {
+    .container { padding: 16px 10px; }
+    .section { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">CBC · CENSO 2026 · SANTA ANA</div>
+    <div class="header-sub" id="header-sub">Completa los campos paso a paso</div>
+  </div>
+</div>
+<div class="cbc-bar"><span style="background:#B648CB"></span><span style="background:#FD7B01"></span><span style="background:#00BE00"></span><span style="background:#009AE2"></span><span style="background:#FFCD00"></span></div>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════
+       SECCIÓN 0: IDENTIFICACIÓN DEL CENSADOR
+  ════════════════════════════════════════════ -->
+  <div class="section always" id="sec-ident">
+    <div class="section-label">Identificación</div>
+    <div class="section-title">¿Quién eres?</div>
+
+    <div class="field-group">
+      <label class="field-label">Nombre del censador <span class="req">*</span></label>
+      <select id="sel-censador" onchange="onCensadorChange()" disabled>
+        <option value="">— Selecciona tu nombre —</option>
+        <option value="Ezequiel">Ezequiel</option>
+        <option value="Ivan">Ivan</option>
+        <option value="Jonathan">Jonathan</option>
+        <option value="Jose">Jose</option>
+        <option value="Mauricio">Mauricio</option>
+        <option value="Raul">Raul</option>
+        <option value="Stephanie">Stephanie</option>
+      </select>
+      <div id="loading-clientes" style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:#6b7280"><span style="display:inline-block;width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#005CB9;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></span>Cargando lista de clientes...</div>
+      <div id="load-status" style="font-size:12px;margin-top:4px"></div>
+      <div class="field-error" id="err-censador">Debes seleccionar tu nombre.</div>
+    </div>
+
+    <!-- SAP + Nombre cliente (aparece tras elegir censador) -->
+    <div id="cliente-fields" style="display:none">
+      <div class="field-group">
+        <label class="field-label">SAP del cliente <span class="req">*</span></label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="inp-sap" placeholder="Ej. 2057619" inputmode="numeric"
+                 oninput="onSapInput(this.value)" onkeydown="onSapKeydown(event)" autocomplete="off">
+          <div class="autocomplete-list" id="sap-list"></div>
+        </div>
+        <div class="field-error" id="err-sap">Debes seleccionar un SAP válido de tu lista.</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Nombre del cliente</label>
+        <input type="text" id="inp-nombre-cliente" readonly placeholder="Se llena automáticamente">
+      </div>
+    </div>
+
+    <div class="nav-btns" id="btn-ident">
+      <button class="btn btn-primary" onclick="goToQ1()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P1: STATUS DEL CLIENTE
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q1">
+    <div class="section-label">Pregunta 1 de 16</div>
+    <div class="section-title">Status del cliente</div>
+    <div class="options-list" id="opt-q1">
+      <label class="option-item" onclick="selectOpt('q1','Activo Comprador', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Activo Comprador
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','Activo no comprador', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Activo no comprador
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','Cierre definitivo', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Cierre definitivo
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','Duplicado', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Duplicado
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','No encontrado', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>No encontrado
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','Visita sin Censo', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Visita sin Censo (Activo No brindó información)
+      </label>
+      <label class="option-item" onclick="selectOpt('q1','Activo No visita Asesor', this)">
+        <input type="radio" name="q1"><div class="option-dot"></div>Activo (No visita Asesor)
+      </label>
+    </div>
+    <!-- Campo SAP duplicado -->
+    <div class="sap-dup-field" id="sap-dup-wrap">
+      <div class="field-group" style="margin-top:10px">
+        <label class="field-label">SAP del duplicado</label>
+        <input type="text" id="inp-sap-dup" placeholder="Ingresa el SAP (7 dígitos)" inputmode="numeric" maxlength="7" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div>
+      <div class="inline-note">Ingresa el SAP del registro duplicado y continúa.</div>
+    </div>
+    <div class="field-error" id="err-q1">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-ident')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ1Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P2: TIPO DE ATENCIÓN ACTUAL
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q2">
+    <div class="section-label">Pregunta 2 de 16</div>
+    <div class="section-title">¿Qué tipo de atención recibe actualmente?</div>
+    <div class="options-list" id="opt-q2">
+      <label class="option-item" onclick="selectOpt('q2','Visita de Asesor', this)">
+        <input type="radio" name="q2"><div class="option-dot"></div>Visita de Asesor
+      </label>
+      <label class="option-item" onclick="selectOpt('q2','Ingreso por Pepsi Chat', this)">
+        <input type="radio" name="q2"><div class="option-dot"></div>Ingreso por Pepsi Chat
+      </label>
+      <label class="option-item" onclick="selectOpt('q2','Llamada', this)">
+        <input type="radio" name="q2"><div class="option-dot"></div>Llamada
+      </label>
+      <label class="option-item" onclick="selectOpt('q2','Whatsapp', this)">
+        <input type="radio" name="q2"><div class="option-dot"></div>Whatsapp
+      </label>
+      <label class="option-item" onclick="selectOpt('q2','Todas las anteriores', this)">
+        <input type="radio" name="q2"><div class="option-dot"></div>Todas las anteriores
+      </label>
+    </div>
+    <div class="field-error" id="err-q2">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q1')">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSec('sec-q2','sec-q3','err-q2','q2')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P3: NIVEL DE SATISFACCIÓN
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q3">
+    <div class="section-label">Pregunta 3 de 16</div>
+    <div class="section-title">Nivel de satisfacción atención Pepsi</div>
+    <div class="options-list" id="opt-q3">
+      <label class="option-item" onclick="selectOpt('q3','Excelente', this)">
+        <input type="radio" name="q3"><div class="option-dot"></div>Excelente
+      </label>
+      <label class="option-item" onclick="selectOpt('q3','Muy Buena', this)">
+        <input type="radio" name="q3"><div class="option-dot"></div>Muy Buena
+      </label>
+      <label class="option-item" onclick="selectOpt('q3','Buena', this)">
+        <input type="radio" name="q3"><div class="option-dot"></div>Buena
+      </label>
+      <label class="option-item" onclick="selectOpt('q3','Regular', this)">
+        <input type="radio" name="q3"><div class="option-dot"></div>Regular
+      </label>
+      <label class="option-item" onclick="selectOpt('q3','Mala', this)">
+        <input type="radio" name="q3"><div class="option-dot"></div>Mala
+      </label>
+    </div>
+    <div class="field-error" id="err-q3">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q2')">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSec('sec-q3','sec-q4','err-q3','q3')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P4: ACTUALIZACIÓN TELEFÓNICA
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q4">
+    <div class="section-label">Pregunta 4 de 16</div>
+    <div class="section-title">Actualización de número telefónico</div>
+    <div class="field-group">
+      <label class="field-label">Teléfono 1 <span class="req">*</span></label>
+      <input type="tel" id="inp-tel1" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Teléfono 2</label>
+      <input type="tel" id="inp-tel2" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Teléfono 3</label>
+      <input type="tel" id="inp-tel3" placeholder="00000000" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q3')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ4Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P5: WHATSAPP EN NÚMERO PRINCIPAL
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q5">
+    <div class="section-label">Pregunta 5 de 16</div>
+    <div class="section-title">¿Posee WhatsApp con su número principal? (Teléfono 1)</div>
+    <div class="options-list" id="opt-q5">
+      <label class="option-item" onclick="selectOpt('q5','Sí', this)">
+        <input type="radio" name="q5"><div class="option-dot"></div>Sí
+      </label>
+      <label class="option-item" onclick="selectOpt('q5','No', this)">
+        <input type="radio" name="q5"><div class="option-dot"></div>No
+      </label>
+    </div>
+    <div class="field-error" id="err-q5">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q4')">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSec('sec-q5','sec-q6','err-q5','q5')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P6: LLAMADA (con salto condicional)
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q6">
+    <div class="section-label">Pregunta 6 de 16</div>
+    <div class="section-title">¿Le gustaría recibir atención por medio de llamada?</div>
+    <div class="options-list" id="opt-q6">
+      <label class="option-item" onclick="selectOpt('q6','Sí', this)">
+        <input type="radio" name="q6"><div class="option-dot"></div>Sí
+        <span class="skip-note" style="margin-left:auto;font-size:11px;color:var(--blue)">→ Pregunta 7</span>
+      </label>
+      <label class="option-item" onclick="selectOpt('q6','No', this)">
+        <input type="radio" name="q6"><div class="option-dot"></div>No
+        <span class="skip-note" style="margin-left:auto;font-size:11px;color:var(--text-muted)">→ Pregunta 8</span>
+      </label>
+    </div>
+    <div class="field-error" id="err-q6">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q5')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ6Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P7: HORARIO (solo si P6 = Sí)
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q7">
+    <div class="section-label">Pregunta 7 de 16</div>
+    <div class="section-title">¿En qué horario podría recibir la llamada?</div>
+    <div class="options-list horario-grid" id="opt-q7">
+      <label class="option-item" onclick="selectOpt('q7','Durante la mañana', this)">
+        <input type="radio" name="q7"><div class="option-dot"></div>Durante la mañana
+      </label>
+      <label class="option-item" onclick="selectOpt('q7','Durante la tarde', this)">
+        <input type="radio" name="q7"><div class="option-dot"></div>Durante la tarde
+      </label>
+    </div>
+    <div class="field-error" id="err-q7">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q6')">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSec('sec-q7','sec-q8','err-q7','q7')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P8: TIPO ATENCIÓN PREFERIDA
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q8">
+    <div class="section-label">Pregunta 8 de 16</div>
+    <div class="section-title">¿Qué tipo de atención prefiere con Pepsi?</div>
+    <div class="options-list" id="opt-q8">
+      <label class="option-item" onclick="selectOpt('q8','Visita de Asesor', this)">
+        <input type="radio" name="q8"><div class="option-dot"></div>Visita de Asesor
+      </label>
+      <label class="option-item" onclick="selectOpt('q8','Ingreso por Pepsi Chat', this)">
+        <input type="radio" name="q8"><div class="option-dot"></div>Ingreso por Pepsi Chat
+      </label>
+      <label class="option-item" onclick="selectOpt('q8','Llamada', this)">
+        <input type="radio" name="q8"><div class="option-dot"></div>Llamada
+      </label>
+      <label class="option-item" onclick="selectOpt('q8','Whatsapp', this)">
+        <input type="radio" name="q8"><div class="option-dot"></div>Whatsapp
+      </label>
+      <label class="option-item" onclick="selectOpt('q8','Cualquiera de las anteriores', this)">
+        <input type="radio" name="q8"><div class="option-dot"></div>Cualquiera de las anteriores
+      </label>
+    </div>
+    <div class="field-error" id="err-q8">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" id="btn-q8-back" onclick="goBack('sec-q6')">← Atrás</button>
+      <button class="btn btn-primary" onclick="nextSec('sec-q8','sec-q9','err-q8','q8')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P9: ATENCIÓN CCX (con salto condicional)
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q9">
+    <div class="section-label">Pregunta 9 de 16</div>
+    <div class="section-title">¿Bajo qué tipo de atención le atiende actualmente CCX?</div>
+    <div class="options-list" id="opt-q9">
+      <label class="option-item" onclick="selectOpt('q9','Llamada', this)">
+        <input type="radio" name="q9"><div class="option-dot"></div>Llamada
+      </label>
+      <label class="option-item" onclick="selectOpt('q9','Whatsapp', this)">
+        <input type="radio" name="q9"><div class="option-dot"></div>Whatsapp
+      </label>
+      <label class="option-item" onclick="selectOpt('q9','BEES (Aplicación)', this)">
+        <input type="radio" name="q9"><div class="option-dot"></div>BEES (Aplicación)
+      </label>
+      <label class="option-item" onclick="selectOpt('q9','Ejecutivo', this)">
+        <input type="radio" name="q9"><div class="option-dot"></div>Ejecutivo
+      </label>
+      <label class="option-item" onclick="selectOpt('q9','No atiende CCX', this)">
+        <input type="radio" name="q9"><div class="option-dot"></div>No atiende CCX
+        <span class="skip-note" style="margin-left:auto;font-size:11px;color:var(--text-muted)">→ P.13</span>
+      </label>
+    </div>
+    <div class="field-error" id="err-q9">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q8')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ9Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P10, 11, 12: CAJAS COCA-COLA
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q10">
+    <div class="section-label">Preguntas 10–12 · Coca-Cola (COLA)</div>
+    <div class="section-title">¿Cuántas cajas compra de Coca-Cola?</div>
+    <div class="field-group">
+      <label class="field-label">1.25 litros</label>
+      <div class="number-row">
+        <input type="number" id="inp-q10" placeholder="0" min="0">
+        <span class="unit">cajas</span>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">2.5 litros</label>
+      <div class="number-row">
+        <input type="number" id="inp-q11" placeholder="0" min="0">
+        <span class="unit">cajas</span>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">3 litros</label>
+      <div class="number-row">
+        <input type="number" id="inp-q12" placeholder="0" min="0">
+        <span class="unit">cajas</span>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q9')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goTo('sec-q10','sec-q13')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P13: ATENCIÓN SALVA COLA
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q13">
+    <div class="section-label">Pregunta 13 de 16</div>
+    <div class="section-title">¿Bajo qué tipo de atención le atiende actualmente Salva Cola?</div>
+    <div class="options-list" id="opt-q13">
+      <label class="option-item" onclick="selectOpt('q13','Autoventa', this)">
+        <input type="radio" name="q13"><div class="option-dot"></div>Autoventa
+      </label>
+      <label class="option-item" onclick="selectOpt('q13','Ejecutivo', this)">
+        <input type="radio" name="q13"><div class="option-dot"></div>Ejecutivo
+      </label>
+      <label class="option-item" onclick="selectOpt('q13','Whatsapp', this)">
+        <input type="radio" name="q13"><div class="option-dot"></div>Whatsapp
+      </label>
+      <label class="option-item" onclick="selectOpt('q13','Llamada', this)">
+        <input type="radio" name="q13"><div class="option-dot"></div>Llamada
+      </label>
+      <label class="option-item" onclick="selectOpt('q13','No atiende Salva Cola', this)">
+        <input type="radio" name="q13"><div class="option-dot"></div>No atiende Salva Cola
+      </label>
+    </div>
+    <div class="field-error" id="err-q13">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" id="btn-q13-back" onclick="goBack('sec-q9')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ13Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P14, 15: CAJAS SALVA COLA
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q14">
+    <div class="section-label">Preguntas 14–15 · Salva Cola (NEGRA)</div>
+    <div class="section-title">¿Cuántas cajas compra de Salva Cola?</div>
+    <div class="field-group">
+      <label class="field-label">3 litros</label>
+      <div class="number-row">
+        <input type="number" id="inp-q14" placeholder="0" min="0">
+        <span class="unit">cajas</span>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">355 pet</label>
+      <div class="number-row">
+        <input type="number" id="inp-q15" placeholder="0" min="0">
+        <span class="unit">cajas</span>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q13')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goTo('sec-q14','sec-q16')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       P16: MODIFICACIÓN DE DATOS
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-q16">
+    <div class="section-label">Pregunta 16 de 16</div>
+    <div class="section-title">Modificación de datos generales</div>
+    <div class="options-list" id="opt-q16">
+      <label class="option-item" onclick="selectOpt('q16','Sí', this)">
+        <input type="radio" name="q16"><div class="option-dot"></div>Sí — requiere modificación
+        <span class="skip-note" style="margin-left:auto;font-size:11px;color:var(--blue)">→ Link</span>
+      </label>
+      <label class="option-item" onclick="selectOpt('q16','No', this)">
+        <input type="radio" name="q16"><div class="option-dot"></div>No — sin cambios
+        <span class="skip-note" style="margin-left:auto;font-size:11px;color:var(--text-muted)">→ Finalizar</span>
+      </label>
+    </div>
+    <!-- Link de modificación -->
+    <div class="link-box" id="link-mod">
+      <p>Accede al formulario de modificación de datos generales:</p>
+      <a href="https://TU-LINK-AQUI.com" target="_blank" id="link-modificacion">
+        🔗 Formulario de modificación de datos
+      </a>
+      <p style="margin-top:8px;font-size:11px;color:var(--text-muted)">Completa el formulario y regresa aquí para enviar el censo.</p>
+    </div>
+    <div class="field-error" id="err-q16">Selecciona una opción.</div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q14')">← Atrás</button>
+      <button class="btn btn-primary" onclick="goQ16Next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANTALLA DE RESUMEN + ENVÍO
+  ════════════════════════════════════════════ -->
+  <div class="section" id="sec-submit">
+    <div class="section-label">Resumen</div>
+    <div class="section-title">Revisa y envía el censo</div>
+    <div id="resumen-content" style="font-size:13px; color:var(--text-muted); margin-bottom:16px;"></div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goBack('sec-q16')">← Atrás</button>
+      <button class="btn btn-success" onclick="submitForm()">✓ Enviar censo</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PANTALLA DE ÉXITO
+  ════════════════════════════════════════════ -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✓</div>
+    <h2>Censo enviado</h2>
+    <p id="success-detail">El registro fue guardado correctamente.</p>
+    <button class="btn btn-primary" onclick="resetForm()" style="max-width:220px;margin:0 auto">
+      + Nuevo cliente
+    </button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIGURACIÓN — Solo edita estas dos líneas
+// ═══════════════════════════════════════════════════════════
+
+// URL del Google Apps Script (la pegas aquí cuando la tengas)
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylJfqtPQQ3kFboJLiLDe3k6HmVfy-Yy7qR55ia4XZJ89p0rfHAV0xwYn6EpqEScwM7/exec";
+
+// Link del formulario de modificación de datos generales
+const LINK_MODIFICACION = "https://TU-LINK-AQUI.com";
+
+// ═══════════════════════════════════════════════════════════
+// CLIENTES — se cargan automáticamente desde Google Sheets
+// ═══════════════════════════════════════════════════════════
+let CLIENTES = [];
+
+async function cargarClientes() {
+  const loading = document.getElementById('loading-clientes');
+  const selCensador = document.getElementById('sel-censador');
+  try {
+    loading.style.display = 'flex';
+    selCensador.disabled = true;
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    if (data.ok && data.clientes.length > 0) {
+      CLIENTES = data.clientes;
+      loading.style.display = 'none';
+      selCensador.disabled = false;
+      document.getElementById('load-status').textContent = CLIENTES.length + ' clientes cargados ✓';
+      document.getElementById('load-status').style.color = 'var(--success)';
+    } else {
+      throw new Error('Sin datos');
+    }
+  } catch(e) {
+    loading.style.display = 'none';
+    selCensador.disabled = false;
+    document.getElementById('load-status').textContent = '⚠ No se pudieron cargar los clientes. Verifica la conexión.';
+    document.getElementById('load-status').style.color = 'var(--danger)';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// GOOGLE SHEETS URL — es la misma del script (doPost)
+// ═══════════════════════════════════════════════════════════
+const SHEETS_URL = SCRIPT_URL;
+
+// ═══════════════════════════════════════════════════════════
+// ESTADO DEL FORMULARIO
+// ═══════════════════════════════════════════════════════════
+const answers = {};
+let currentCensador = "";
+let selectedSAP = null;
+let selectedCliente = "";
+let acFocusIdx = -1;
+let currentSuggestions = [];
+let cameFromQ7 = false; // para el botón atrás de Q8
+
+const TOTAL_STEPS = 16;
+
+// ═══════════════════════════════════════════════════════════
+// PROGRESO
+// ═══════════════════════════════════════════════════════════
+function updateProgress(step) {
+  const pct = Math.round((step / TOTAL_STEPS) * 100);
+  document.getElementById('progress').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CENSADOR SELECCIONADO
+// ═══════════════════════════════════════════════════════════
+function onCensadorChange() {
+  const val = document.getElementById('sel-censador').value;
+  currentCensador = val;
+  selectedSAP = null;
+  selectedCliente = "";
+  document.getElementById('inp-sap').value = "";
+  document.getElementById('inp-nombre-cliente').value = "";
+  document.getElementById('sap-list').classList.remove('open');
+  document.getElementById('cliente-fields').style.display = val ? 'block' : 'none';
+  document.getElementById('header-sub').textContent = val ? 'Censador: ' + val : 'Completa los campos paso a paso';
+  updateProgress(0);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTOCOMPLETADO SAP
+// ═══════════════════════════════════════════════════════════
+function onSapInput(val) {
+  selectedSAP = null;
+  selectedCliente = "";
+  document.getElementById('inp-nombre-cliente').value = "";
+  acFocusIdx = -1;
+
+  if (!val.trim() || !currentCensador) {
+    document.getElementById('sap-list').classList.remove('open');
+    return;
+  }
+
+  const matches = CLIENTES.filter(c =>
+    c.censador === currentCensador && c.sap.startsWith(val.trim())
+  ).slice(0, 8);
+
+  currentSuggestions = matches;
+  renderSapList(matches, val.trim());
+}
+
+function renderSapList(matches, query) {
+  const list = document.getElementById('sap-list');
+  if (!matches.length) { list.classList.remove('open'); return; }
+
+  list.innerHTML = matches.map((c, i) => `
+    <div class="autocomplete-item" data-idx="${i}" onclick="selectSap(${i})">
+      <span class="sap-badge">${c.sap}</span>
+      <span>${c.nombre}</span>
+    </div>
+  `).join('');
+  list.classList.add('open');
+}
+
+function selectSap(idx) {
+  const c = currentSuggestions[idx];
+  if (!c) return;
+  selectedSAP = c.sap;
+  selectedCliente = c.nombre;
+  document.getElementById('inp-sap').value = c.sap;
+  document.getElementById('inp-nombre-cliente').value = c.nombre;
+  document.getElementById('sap-list').classList.remove('open');
+  acFocusIdx = -1;
+}
+
+function onSapKeydown(e) {
+  const list = document.getElementById('sap-list');
+  const items = list.querySelectorAll('.autocomplete-item');
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acFocusIdx = Math.min(acFocusIdx + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === acFocusIdx));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acFocusIdx = Math.max(acFocusIdx - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('focused', i === acFocusIdx));
+  } else if (e.key === 'Enter' && acFocusIdx >= 0) {
+    e.preventDefault();
+    selectSap(acFocusIdx);
+  } else if (e.key === 'Escape') {
+    list.classList.remove('open');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.autocomplete-wrap')) {
+    document.getElementById('sap-list').classList.remove('open');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// OPCIONES RADIO
+// ═══════════════════════════════════════════════════════════
+function selectOpt(key, val, el) {
+  answers[key] = val;
+  const container = el.closest('.options-list');
+  container.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+
+  // Lógica especial Q1 duplicado
+  if (key === 'q1') {
+    const sapDup = document.getElementById('sap-dup-wrap');
+    sapDup.classList.toggle('show', val === 'Duplicado');
+  }
+  // Lógica especial Q16 link
+  if (key === 'q16') {
+    const linkBox = document.getElementById('link-mod');
+    linkBox.classList.toggle('show', val === 'Sí');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVEGACIÓN GENÉRICA
+// ═══════════════════════════════════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => {
+    if (!s.classList.contains('always')) s.classList.remove('active');
+  });
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function goTo(fromId, toId) {
+  showSection(toId);
+}
+
+function goBack(toId) {
+  showSection(toId);
+}
+
+function nextSec(fromId, toId, errId, ansKey) {
+  if (!answers[ansKey]) {
+    document.getElementById(errId).classList.add('show');
+    return;
+  }
+  document.getElementById(errId).classList.remove('show');
+  showSection(toId);
+
+  const stepMap = { q2:2, q3:3, q4:4, q5:5, q6:6, q7:7, q8:8, q9:9, q13:13, q14:14, q15:15, q16:16 };
+  if (stepMap[ansKey]) updateProgress(stepMap[ansKey]);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FLUJO IDENTIFICACIÓN → P1
+// ═══════════════════════════════════════════════════════════
+function goToQ1() {
+  const errC = document.getElementById('err-censador');
+  const errS = document.getElementById('err-sap');
+
+  if (!currentCensador) {
+    errC.classList.add('show'); return;
+  } else errC.classList.remove('show');
+
+  if (!selectedSAP) {
+    errS.classList.add('show'); return;
+  } else errS.classList.remove('show');
+
+  answers['censador'] = currentCensador;
+  answers['sap'] = selectedSAP;
+  answers['nombre_cliente'] = selectedCliente;
+
+  showSection('sec-q1');
+  updateProgress(1);
+}
+
+// ═══════════════════════════════════════════════════════════
+// P1 → SIGUIENTE (siempre va a P2, ya que duplicado solo pide SAP adicional)
+// ═══════════════════════════════════════════════════════════
+function goQ1Next() {
+  if (!answers['q1']) {
+    document.getElementById('err-q1').classList.add('show'); return;
+  }
+  document.getElementById('err-q1').classList.remove('show');
+
+  if (answers['q1'] === 'Duplicado') {
+    const sapDupVal = document.getElementById('inp-sap-dup').value.trim();
+    answers['sap_duplicado'] = sapDupVal;
+  }
+
+  showSection('sec-q2');
+  updateProgress(2);
+}
+
+// ═══════════════════════════════════════════════════════════
+// P6 → SALTO CONDICIONAL (Sí→P7, No→P8)
+// ═══════════════════════════════════════════════════════════
+function goQ6Next() {
+  if (!answers['q6']) {
+    document.getElementById('err-q6').classList.add('show'); return;
+  }
+  document.getElementById('err-q6').classList.remove('show');
+  updateProgress(6);
+
+  if (answers['q6'] === 'Sí') {
+    cameFromQ7 = true;
+    showSection('sec-q7');
+  } else {
+    cameFromQ7 = false;
+    document.getElementById('btn-q8-back').setAttribute('onclick', "goBack('sec-q6')");
+    showSection('sec-q8');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// P9 → SALTO CONDICIONAL (No atiende CCX→P13, resto→P10)
+// ═══════════════════════════════════════════════════════════
+function goQ9Next() {
+  if (!answers['q9']) {
+    document.getElementById('err-q9').classList.add('show'); return;
+  }
+  document.getElementById('err-q9').classList.remove('show');
+  updateProgress(9);
+
+  if (answers['q9'] === 'No atiende CCX') {
+    document.getElementById('btn-q13-back').setAttribute('onclick', "goBack('sec-q9')");
+    showSection('sec-q13');
+  } else {
+    showSection('sec-q10');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// P16 → SIGUIENTE
+// ═══════════════════════════════════════════════════════════
+function goQ16Next() {
+  if (!answers['q16']) {
+    document.getElementById('err-q16').classList.add('show'); return;
+  }
+  document.getElementById('err-q16').classList.remove('show');
+  updateProgress(16);
+
+  // Guardar datos de cajas
+  answers['q10'] = document.getElementById('inp-q10').value || '0';
+  answers['q11'] = document.getElementById('inp-q11').value || '0';
+  answers['q12'] = document.getElementById('inp-q12').value || '0';
+  answers['q14'] = document.getElementById('inp-q14').value || '0';
+  answers['q15'] = document.getElementById('inp-q15').value || '0';
+  answers['tel1'] = document.getElementById('inp-tel1').value || '';
+  answers['tel2'] = document.getElementById('inp-tel2').value || '';
+  answers['tel3'] = document.getElementById('inp-tel3').value || '';
+
+  buildResumen();
+  showSection('sec-submit');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESUMEN
+// ═══════════════════════════════════════════════════════════
+function buildResumen() {
+  const rows = [
+    ['Censador', answers.censador],
+    ['SAP', answers.sap],
+    ['Cliente', answers.nombre_cliente],
+    ['Status', answers.q1],
+    answers.sap_duplicado ? ['SAP duplicado', answers.sap_duplicado] : null,
+    ['Tipo atención actual', answers.q2],
+    ['Satisfacción', answers.q3],
+    ['Teléfonos', [answers.tel1, answers.tel2, answers.tel3].filter(Boolean).join(' / ') || '—'],
+    ['WhatsApp en T1', answers.q5],
+    ['Recibe llamada', answers.q6],
+    answers.q7 ? ['Horario llamada', answers.q7] : null,
+    ['Atención preferida', answers.q8],
+    ['Atención CCX', answers.q9],
+    ['Cajas CC 1.25L', answers.q10],
+    ['Cajas CC 2.5L', answers.q11],
+    ['Cajas CC 3L', answers.q12],
+    ['Atención Salva Cola', answers.q13],
+    ['Cajas SC 3L', answers.q14],
+    ['Cajas SC 355pet', answers.q15],
+    ['Modificación datos', answers.q16],
+  ].filter(Boolean);
+
+  document.getElementById('resumen-content').innerHTML = rows.map(([k, v]) =>
+    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;">
+      <span style="color:#6b7280">${k}</span>
+      <span style="font-weight:500;color:#1a1a1a;text-align:right;max-width:55%">${v || '—'}</span>
+    </div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENVÍO DEL FORMULARIO
+// ═══════════════════════════════════════════════════════════
+function submitForm() {
+  const timestamp = new Date().toLocaleString('es-SV');
+  const payload = { ...answers, timestamp };
+
+  // Envío a Google Sheets (si tienes el script configurado)
+  if (SHEETS_URL && !SHEETS_URL.includes('TU-SCRIPT-ID')) {
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+  }
+
+  // Mostrar éxito
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+  document.getElementById('success-detail').textContent =
+    `Cliente: ${answers.nombre_cliente} (SAP: ${answers.sap}) · ${timestamp}`;
+  document.getElementById('success-screen').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════
+function resetForm() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  currentCensador = "";
+  selectedSAP = null;
+  selectedCliente = "";
+  cameFromQ7 = false;
+
+  document.getElementById('sel-censador').value = '';
+  document.getElementById('inp-sap').value = '';
+  document.getElementById('inp-nombre-cliente').value = '';
+  document.getElementById('cliente-fields').style.display = 'none';
+  document.getElementById('sap-dup-wrap').classList.remove('show');
+  document.getElementById('link-mod').classList.remove('show');
+  document.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+  document.querySelectorAll('input[type="number"], input[type="tel"]').forEach(i => i.value = '');
+  document.getElementById('header-sub').textContent = 'Completa los campos paso a paso';
+
+  document.querySelectorAll('.section').forEach(s => {
+    s.style.display = '';
+    s.classList.remove('active');
+  });
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('sec-ident').classList.add('always');
+  updateProgress(0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── P13: salto condicional (No atiende Salva Cola → P16) ──
+function goQ13Next() {
+  if (!answers['q13']) {
+    document.getElementById('err-q13').classList.add('show'); return;
+  }
+  document.getElementById('err-q13').classList.remove('show');
+  if (answers['q13'] === 'No atiende Salva Cola') {
+    showSection('sec-q16');
+    updateProgress(16);
+  } else {
+    showSection('sec-q14');
+    updateProgress(13);
+  }
+}
+
+// ── P4: Tel1 obligatorio, 8 dígitos ────────────────────────
+function goQ4Next() {
+  const tel1 = document.getElementById('inp-tel1').value.trim();
+  const err = document.getElementById('err-tel1');
+  if (!tel1 || tel1.length !== 8) {
+    err.classList.add('show'); return;
+  }
+  err.classList.remove('show');
+  showSection('sec-q5');
+  updateProgress(4);
+}
+
+// Link de modificación
+document.getElementById('link-modificacion').href = LINK_MODIFICACION;
+
+// Cargar clientes al iniciar
+cargarClientes();
+</script>
+
+</body>
+</html>
